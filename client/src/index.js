@@ -6,6 +6,7 @@ import * as serviceWorker from './serviceWorker';
 
 import ApolloClient from 'apollo-boost';
 import { ApolloProvider } from 'react-apollo';
+import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
@@ -21,9 +22,11 @@ const client = new ApolloClient({
 
 ReactDOM.render(
   <ApolloProvider client={ client }>
-    <Provider store={createStore(reducers)}>
-      <App />
-    </Provider>
+    <ApolloHooksProvider client={ client }>
+      <Provider store={createStore(reducers)}>
+        <App />
+      </Provider>
+    </ApolloHooksProvider>,
   </ApolloProvider>,
   document.getElementById('root'));
 

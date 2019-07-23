@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { graphql, compose } from 'react-apollo';
+import { useMutation } from 'react-apollo-hooks';
 
 // Queries & Mutations
 import fetchKlassesQuery from '../../queries/fetchKlasses';
@@ -51,9 +52,10 @@ const useStyles = makeStyles(theme => ({
 
 // TODO make form mutate correctly based on action from prop
 // TODO set options for all students/teachers from studio
-const CreateKlassForm = ({action, selectedKlass, mutate}) => {
+const CreateKlassForm = ({data, action, selectedKlass, mutate}) => {
   const classes = useStyles();
 
+  const [editKlass, editKlassData] = useMutation(editKlassMutation);
   const [values, setValues] = React.useState(action === 'create' ? {
     name: '',
     description: '',
@@ -79,29 +81,56 @@ const CreateKlassForm = ({action, selectedKlass, mutate}) => {
     return <h3 className="success-message">Your class was created successfully and added to the calendar!</h3>
   }
 
+  // TODO Remove hardcoded IDs
   function submitForm(e) {
     e.preventDefault();
-    var { name, description, startTime, endTime, teachers, students } = values;
+    var { id, name, description, startTime, endTime, teachers, students } = values;
     var formatTeacherParams = teachers.map((t) => ({id: t.id, name: t.name}));
     var formatStudentParams = students.map((s) => ({id: s.id, name: s.name}));
 
-    mutate({
-      refetchQueries: [{ query: fetchKlassesQuery, variables: { id: 1 } }],
-      variables: {
-        klass: {
-          name,
-          description,
-          startTime,
-          endTime,
-          studioId: '1'
-        },
-        teachers: formatTeacherParams,
-        students: formatStudentParams 
-      }
-    }).then(() => {
-        resetForm();
-        toggleSuccessMessage({ showSuccessMessage: true });
-    });
+    switch (action) {
+      case 'edit':
+        editKlass({
+          variables: {
+            klass: {
+              id,
+              name,
+              description,
+              startTime,
+              endTime,
+              studioId: '1'
+            },
+            teachers: formatTeacherParams,
+            students: formatStudentParams 
+          },
+          refetchQueries: [{ query: fetchKlassesQuery, variables: { id: 1 } }]
+        }).then(() => {
+          resetForm();
+          toggleSuccessMessage({ showSuccessMessage: true });
+        });
+        break;
+      case 'create':
+        mutate({
+          refetchQueries: [{ query: fetchKlassesQuery, variables: { id: 1 } }],
+          variables: {
+            klass: {
+              name,
+              description,
+              startTime,
+              endTime,
+              studioId: '1'
+            },
+            teachers: formatTeacherParams,
+            students: formatStudentParams 
+          }
+        }).then(() => {
+          resetForm();
+          toggleSuccessMessage({ showSuccessMessage: true });
+        });
+        break;
+      default:
+        throw new Error("Component missing required prop 'action'.");
+    }
   }
 
   function resetForm() {
@@ -119,17 +148,36 @@ const CreateKlassForm = ({action, selectedKlass, mutate}) => {
     setValues({ ...values, [name]: event.target.value });
   }
 
-  //const allStudioStudents = data.studio.students;
-  //const allStudioTeachers = data.studio.teachers;
-  const allStudioStudents = [];
-  const allStudioTeachers = [];
+  var allStudioStudents = [];
+  var allStudioTeachers = [];
+  if (!data.loading) {
+    allStudioStudents = data.studio.students;
+    allStudioTeachers = data.studio.teachers;
+  }
 
+  // Set edit/create variables
   var formattedStartTime = '';
   var formattedEndTime = '';
-  if (action === 'edit') {
-    formattedStartTime = new Date(values.startTime).toISOString().split('Z')[0]
-    formattedEndTime = new Date(values.endTime).toISOString().split('Z')[0]
-  } 
+  var btnText = '';
+
+  function setBtnText() {
+    switch (action) {
+      case 'edit':
+        debugger;
+        formattedStartTime = new Date(values.startTime).toISOString().split('Z')[0];
+        formattedEndTime = new Date(values.endTime).toISOString().split('Z')[0];
+        btnText = 'Update this class';
+        break;
+      case 'create': 
+        btnText = 'Create this class';
+        break;
+      default:
+        btnText = 'Submit';
+        break;
+    }
+  };
+
+  setBtnText();
 
   return (
     <form id="create-class-form" onSubmit={submitForm} className={classes.root}>
@@ -202,7 +250,7 @@ const CreateKlassForm = ({action, selectedKlass, mutate}) => {
         InputLabelProps={{ shrink: true }} 
       />
       <Button variant="contained" className={classes.button} type="submit">
-        Create New Class
+        {btnText}
       </Button>
     </form>
   );

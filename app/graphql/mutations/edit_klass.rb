@@ -17,7 +17,7 @@ class Mutations::EditKlass < GraphQL::Schema::Mutation
 
     existing_klass&.update klass.to_h
 
-    true
+    existing_klass
   end
 
   private

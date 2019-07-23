@@ -12,7 +12,7 @@ module Types
       description "Creates a new yoga class for given studio."
     end
 
-    field :update_klass, Types::KlassType, mutation: Mutations::EditKlass do
+    field :edit_klass, Types::KlassType, null: false, mutation: Mutations::EditKlass do
       description "Edit an existing yoga class. Requires ID and new attributes."
     end
 

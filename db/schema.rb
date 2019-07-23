@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_07_09_204151) do
+ActiveRecord::Schema.define(version: 2019_07_23_185153) do
 
   create_table "klass_rosters", force: :cascade do |t|
     t.integer "student_id"
@@ -40,6 +40,16 @@ ActiveRecord::Schema.define(version: 2019_07_09_204151) do
     t.index ["teacher_id", "klass_id"], name: "index_klasses_teachers_on_teacher_id_and_klass_id"
   end
 
+  create_table "memberships", force: :cascade do |t|
+    t.integer "student_id"
+    t.integer "studio_id"
+    t.datetime "start_date"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["student_id"], name: "index_memberships_on_student_id"
+    t.index ["studio_id"], name: "index_memberships_on_studio_id"
+  end
+
   create_table "sessions", force: :cascade do |t|
     t.integer "user_id"
     t.string "key"
@@ -62,17 +72,20 @@ ActiveRecord::Schema.define(version: 2019_07_09_204151) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "studios_teachers", force: :cascade do |t|
-    t.integer "studio_id"
-    t.integer "teacher_id"
-    t.index ["studio_id"], name: "index_studios_teachers_on_studio_id"
-    t.index ["teacher_id"], name: "index_studios_teachers_on_teacher_id"
-  end
-
   create_table "teachers", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "teaching_contracts", force: :cascade do |t|
+    t.integer "teacher_id"
+    t.integer "studio_id"
+    t.datetime "start_date"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["studio_id"], name: "index_teaching_contracts_on_studio_id"
+    t.index ["teacher_id"], name: "index_teaching_contracts_on_teacher_id"
   end
 
   create_table "users", force: :cascade do |t|

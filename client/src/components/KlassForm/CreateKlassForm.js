@@ -2,6 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { graphql, compose } from 'react-apollo';
 import { useMutation } from 'react-apollo-hooks';
+import { useQuery } from 'react-apollo-hooks';
 
 // Queries & Mutations
 import fetchKlass from '../../queries/fetchKlass';
@@ -53,10 +54,24 @@ const useStyles = makeStyles(theme => ({
 
 // TODO make form mutate correctly based on action from prop
 // TODO set options for all students/teachers from studio
-const CreateKlassForm = ({data, action, selectedKlass, selectedKlassId, mutate}) => {
+const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
   const classes = useStyles();
 
-  //const selectedKlass = data.klass;
+  // Load klass
+  var { data, error, loading } = useQuery(fetchKlass, { variables: { id: selectedKlassId }});
+  var selectedKlass = data.klass;
+
+  // Load Studio
+  // TODO remove hard-coded studio id
+  var studio;
+  var allStudents = [];
+  var allTeachers = [];
+  var { data, error, loading } = useQuery(fetchTeachersStudents, { variables: { id: 1 }});
+  if (!loading) { 
+    studio = data.studio;
+    allStudents = studio.students;
+    allTeachers = studio.teachers;
+  };
 
   const [editKlass, editKlassData] = useMutation(editKlassMutation);
   const [values, setValues] = React.useState(action === 'create' ? {
@@ -151,13 +166,6 @@ const CreateKlassForm = ({data, action, selectedKlass, selectedKlassId, mutate})
     setValues({ ...values, [name]: event.target.value });
   }
 
-  var allStudioStudents = [];
-  var allStudioTeachers = [];
-  if (!data.loading) {
-    allStudioStudents = data.studio.students;
-    allStudioTeachers = data.studio.teachers;
-  }
-
   // Set edit/create variables
   var formattedStartTime = '';
   var formattedEndTime = '';
@@ -181,7 +189,7 @@ const CreateKlassForm = ({data, action, selectedKlass, selectedKlassId, mutate})
 
   setBtnText();
 
-  if (data.loading) { return <h3>Loading...</h3> };
+  if (loading) { return <h3>Loading...</h3> };
 
   return (
     <form id="create-class-form" onSubmit={submitForm} className={classes.root}>
@@ -211,11 +219,11 @@ const CreateKlassForm = ({data, action, selectedKlass, selectedKlassId, mutate})
           renderValue={selected => (
             <div className={classes.chips}>
               {selected.map(student => (
-                <Chip key={student.id} label={student.name} className={classes.chip} />
+                <Chip key={student.name} label={student.name} className={classes.chip} />
               ))}
             </div>
           )}>
-          {allStudioStudents.map(student => renderStudentMenuItem(student))}
+          {allStudents.map(student => renderStudentMenuItem(student))}
         </Select>
       </FormControl>
 
@@ -228,11 +236,11 @@ const CreateKlassForm = ({data, action, selectedKlass, selectedKlassId, mutate})
           renderValue={selected => (
             <div className={classes.chips}>
               {selected.map(teacher => (
-                <Chip key={teacher.id} label={teacher.name} className={classes.chip} />
+                <Chip key={teacher.name} label={teacher.name} className={classes.chip} />
               ))}
             </div>
           )}>
-            {allStudioTeachers.map(teacher => renderTeacherMenuItem(teacher))}
+            {allTeachers.map(teacher => renderTeacherMenuItem(teacher))}
         </Select>
       </FormControl>
 
@@ -260,13 +268,11 @@ const CreateKlassForm = ({data, action, selectedKlass, selectedKlassId, mutate})
   );
 }
 
-const mapStateToProps = ({ selectedKlass }) => { return { selectedKlass } };
+const mapStateToProps = ({ selectedKlassId }) => { return { selectedKlassId } };
  
 // TODO change hard-coded studio id in query to var
 export default compose(
   connect(mapStateToProps),
-  graphql(fetchKlass, { options: props => ({ variables: { id: props.selectedKlassId } }) }),
-  graphql(fetchTeachersStudents, { options: props => ({ variables: { id: 1 } }) }),
   graphql(addKlassMutation),
   graphql(editKlassMutation)
 )(CreateKlassForm);

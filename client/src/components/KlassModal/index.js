@@ -75,10 +75,6 @@ const KlassModal = props => {
     }
   });
 
-  console.log('data: ', data);
-  console.log('loading: ', loading);
-  console.log('error: ', error);
-
   if (loading || !data.klass) { return "Loading..." };
 
   const { klass } = data;

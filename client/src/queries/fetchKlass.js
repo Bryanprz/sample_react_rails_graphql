@@ -9,9 +9,11 @@ export default gql`
       startTime
       endTime
       teachers {
+        id
         name
       }
       students {
+        id
         name
       }
     }

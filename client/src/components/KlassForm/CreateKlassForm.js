@@ -58,8 +58,11 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
   const classes = useStyles();
 
   // Load klass
+  var selectedKlass = { name: '', description: '', startTime: '', endTime: '' };  // default to empty klass form until query returns
   var { data, error, loading } = useQuery(fetchKlass, { variables: { id: selectedKlassId }});
-  var selectedKlass = data.klass;
+  if (!loading) {
+    selectedKlass = data.klass;
+  }
 
   // Load Studio
   // TODO remove hard-coded studio id
@@ -73,7 +76,12 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
     allTeachers = studio.teachers;
   };
 
-  const [editKlass, editKlassData] = useMutation(editKlassMutation);
+  // Reformat teacher/student records from FullCalendar API to DB API
+  const { teachers, students } = selectedKlass;
+  selectedKlass.students = students.map((s) => ({id: s.id, name: s.name}));
+  selectedKlass.teachers = teachers.map((t) => ({id: t.id, name: t.name}));
+
+  const [editKlass] = useMutation(editKlassMutation);
   const [values, setValues] = React.useState(action === 'create' ? {
     name: '',
     description: '',
@@ -103,8 +111,6 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
   function submitForm(e) {
     e.preventDefault();
     var { id, name, description, startTime, endTime, teachers, students } = values;
-    var formatTeacherParams = teachers.map((t) => ({id: t.id, name: t.name}));
-    var formatStudentParams = students.map((s) => ({id: s.id, name: s.name}));
 
     switch (action) {
       case 'edit':
@@ -118,10 +124,13 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
               endTime,
               studioId: '1'
             },
-            teachers: formatTeacherParams,
-            students: formatStudentParams 
+            teachers,
+            students
           },
-          refetchQueries: [{ query: fetchKlassesQuery, variables: { id: 1 } }]
+          refetchQueries: [
+            { query: fetchKlass, variables: { id: selectedKlassId } }, 
+            { query: fetchKlassesQuery, variables: { id: 1 } }
+          ]
         }).then(() => {
           resetForm();
           toggleSuccessMessage({ showSuccessMessage: true });
@@ -138,8 +147,8 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
               endTime,
               studioId: '1'
             },
-            teachers: formatTeacherParams,
-            students: formatStudentParams 
+            teachers,
+            students
           }
         }).then(() => {
           resetForm();
@@ -163,6 +172,12 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
   }
 
   const handleChange = name => event => {
+    // Reformat teacher/student entries to remove 'typename' (FullCalendar event obj remnant)
+    if (name === 'teachers' || name === 'students') {
+      const newValues = event.target.value.map(t => ({id: t.id, name: t.name}))
+      setValues({ ...values, [name]: newValues });
+      return;
+    }
     setValues({ ...values, [name]: event.target.value });
   }
 
@@ -174,8 +189,10 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
   function setBtnText() {
     switch (action) {
       case 'edit':
-        formattedStartTime = new Date(values.startTime).toISOString().split('Z')[0];
-        formattedEndTime = new Date(values.endTime).toISOString().split('Z')[0];
+        if (values.startTime && values.endTime) {
+          formattedStartTime = new Date(values.startTime).toISOString().split('Z')[0];
+          formattedEndTime = new Date(values.endTime).toISOString().split('Z')[0];
+        }
         btnText = 'Update this class';
         break;
       case 'create': 
@@ -219,7 +236,7 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
           renderValue={selected => (
             <div className={classes.chips}>
               {selected.map(student => (
-                <Chip key={student.name} label={student.name} className={classes.chip} />
+                <Chip key={student.id} label={student.name} className={classes.chip} />
               ))}
             </div>
           )}>
@@ -236,7 +253,7 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
           renderValue={selected => (
             <div className={classes.chips}>
               {selected.map(teacher => (
-                <Chip key={teacher.name} label={teacher.name} className={classes.chip} />
+                <Chip key={teacher.id} label={teacher.name} className={classes.chip} />
               ))}
             </div>
           )}>

@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { graphql, compose } from 'react-apollo';
+import { useQuery } from 'react-apollo-hooks';
+
+// 3rd party libs
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import './klass-dashboard.scss';
 
 // ActionCreators
-import { selectKlass } from '../../actions';
+import { selectKlassId } from '../../actions';
 
 // Queries & Mutations
+import fetchKlass from '../../queries/fetchKlass';
 import fetchKlassesQuery from '../../queries/fetchKlasses';
 
 // My Components
@@ -27,16 +31,28 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
+//const KlassDashboard = ({data, selectKlassId, selectedKlassId}) => {
 const KlassDashboard = props => {
+  const {data, selectKlassId, selectedKlassId} = props;
+  const classes = useStyles();
   const [showForm, toggleForm] = useState(false);
   const [showKlassModal, toggleModal] = useState(false);
-  const classes = useStyles();
 
-  if (props.data.loading || !props.data.studio) { return <h3>Loading...</h3> };
+  // Hack to force update after Redux action-creator gets invoked in submit func
+  const [, updateState] = React.useState();
+  const forceUpdate = React.useCallback(() => updateState({}), []);
+ 
+  //const { klassData, klassError, klassLoading } = useQuery(fetchKlass, {
+    //variables: {
+      //id: selectedKlassId
+    //}
+  //});
+
+  if (data.loading || !data.studio) { return <h3>Loading...</h3> };
 
   var klassEvents = [];
 
-  props.data.studio.klasses.map(klass => createCalendarEvent(klass));
+  data.studio.klasses.map(klass => createCalendarEvent(klass));
 
   // required format for FullCalendar. https://fullcalendar.io/docs/event-parsing
   function createCalendarEvent(klass) {
@@ -53,25 +69,27 @@ const KlassDashboard = props => {
   }
 
   function klassClick({event}) {
-    const selectedKlass = klassEvents.find( el => el.id === event.id);
-    reFormatKlass(selectedKlass);
+    //const selectedKlass = klassEvents.find( el => el.id === event.id);
+    selectKlassId(event.id); // set Redux state
+    forceUpdate();
 
-    props.selectKlass(selectedKlass); // set Redux state to selectedKlass
+    //reFormatKlass(klass);
+
     toggleModal(true);
   }
 
   // Reformat from FullCalendar specs to DB specs for klass
-  function reFormatKlass(klass) {
-    klass.name = klass.title;
-    klass.startTime = klass.start.toString();
-    klass.endTime = klass.end.toString();
+  //function reFormatKlass(klass) {
+    //klass.name = klass.title;
+    //klass.startTime = klass.start.toString();
+    //klass.endTime = klass.end.toString();
 
-    delete klass.title;
-    delete klass.start;
-    delete klass.end;
+    //delete klass.title;
+    //delete klass.start;
+    //delete klass.end;
 
-    return klass;
-  }
+    //return klass;
+  //}
 
   function closeModal() {
     toggleModal(false);
@@ -113,7 +131,9 @@ const KlassDashboard = props => {
   );
 }
 
+const mapStateToProps = ({selectedKlassId}) => { return { selectedKlassId }};
+
 export default compose(
   graphql(fetchKlassesQuery, { options: props => ({variables: { id: 1 }}) }),
-  connect(null, { selectKlass })
+  connect(mapStateToProps, { selectKlassId })
 )(KlassDashboard);

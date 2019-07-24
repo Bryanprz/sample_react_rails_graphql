@@ -1,11 +1,10 @@
 import React from 'react';
 import CreateKlassForm from './CreateKlassForm';
 
-const EditKlassForm = props => {
-  console.log(props);
+const EditKlassForm = ({selectedKlassId}) => {
   return (
     <div>  
-      <CreateKlassForm action="edit" />
+      <CreateKlassForm action="edit" selectedKlassId={selectedKlassId} />
     </div>  
   );
 }

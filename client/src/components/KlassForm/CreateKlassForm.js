@@ -4,6 +4,7 @@ import { graphql, compose } from 'react-apollo';
 import { useMutation } from 'react-apollo-hooks';
 
 // Queries & Mutations
+import fetchKlass from '../../queries/fetchKlass';
 import fetchKlassesQuery from '../../queries/fetchKlasses';
 import fetchTeachersStudents from '../../queries/fetchTeachersStudents';
 import addKlassMutation from '../../mutations/createKlass';
@@ -52,8 +53,10 @@ const useStyles = makeStyles(theme => ({
 
 // TODO make form mutate correctly based on action from prop
 // TODO set options for all students/teachers from studio
-const CreateKlassForm = ({data, action, selectedKlass, mutate}) => {
+const CreateKlassForm = ({data, action, selectedKlass, selectedKlassId, mutate}) => {
   const classes = useStyles();
+
+  //const selectedKlass = data.klass;
 
   const [editKlass, editKlassData] = useMutation(editKlassMutation);
   const [values, setValues] = React.useState(action === 'create' ? {
@@ -163,7 +166,6 @@ const CreateKlassForm = ({data, action, selectedKlass, mutate}) => {
   function setBtnText() {
     switch (action) {
       case 'edit':
-        debugger;
         formattedStartTime = new Date(values.startTime).toISOString().split('Z')[0];
         formattedEndTime = new Date(values.endTime).toISOString().split('Z')[0];
         btnText = 'Update this class';
@@ -178,6 +180,8 @@ const CreateKlassForm = ({data, action, selectedKlass, mutate}) => {
   };
 
   setBtnText();
+
+  if (data.loading) { return <h3>Loading...</h3> };
 
   return (
     <form id="create-class-form" onSubmit={submitForm} className={classes.root}>
@@ -261,6 +265,7 @@ const mapStateToProps = ({ selectedKlass }) => { return { selectedKlass } };
 // TODO change hard-coded studio id in query to var
 export default compose(
   connect(mapStateToProps),
+  graphql(fetchKlass, { options: props => ({ variables: { id: props.selectedKlassId } }) }),
   graphql(fetchTeachersStudents, { options: props => ({ variables: { id: 1 } }) }),
   graphql(addKlassMutation),
   graphql(editKlassMutation)

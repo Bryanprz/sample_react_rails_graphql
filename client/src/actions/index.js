@@ -6,6 +6,13 @@ export const selectKlass = klass => {
   };
 };
 
+export const selectKlassId = klassId => {
+  return {
+    type: 'KLASS_ID_SELECTED',
+    payload: klassId
+  };
+};
+
 export const authorizeUser = user => {
   return {
     type: 'AUTHORIZE_USER',

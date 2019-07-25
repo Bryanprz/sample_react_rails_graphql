@@ -3,6 +3,12 @@ import { connect } from 'react-redux';
 import { graphql, compose } from 'react-apollo';
 import { useMutation } from 'react-apollo-hooks';
 import { useQuery } from 'react-apollo-hooks';
+import SelectField from './SelectField';
+
+// Shards UI
+import { Form, FormInput, FormGroup } from "shards-react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "shards-ui/dist/css/shards.min.css"
 
 // Queries & Mutations
 import fetchKlass from '../../queries/fetchKlass';
@@ -15,7 +21,7 @@ import editKlassMutation from '../../mutations/editKlass';
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
-import Select from '@material-ui/core/Select';
+//import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import InputLabel from '@material-ui/core/InputLabel';
 import FormControl from '@material-ui/core/FormControl';
@@ -56,6 +62,7 @@ const useStyles = makeStyles(theme => ({
 // TODO set options for all students/teachers from studio
 const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
   const classes = useStyles();
+  const [successMessage, toggleSuccessMessage] = React.useState({showSuccessMessage: false});
 
   // Load klass
   var selectedKlass = { name: '', description: '', startTime: '', endTime: '' };  // default to empty klass form until query returns
@@ -64,22 +71,19 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
     selectedKlass = data.klass;
   }
 
-  // Load Studio
+  // Load Teachers/Students
   // TODO remove hard-coded studio id
-  var studio;
-  var allStudents = [];
-  var allTeachers = [];
+  var students = [];
+  var teachers = [];
   var { data, error, loading } = useQuery(fetchTeachersStudents, { variables: { id: 1 }});
+
   if (!loading) { 
-    studio = data.studio;
-    allStudents = studio.students;
-    allTeachers = studio.teachers;
+    students = data.studio.students;
+    teachers = data.studio.teachers;
   };
 
-  // Reformat teacher/student records from FullCalendar API to DB API
-  const { teachers, students } = selectedKlass;
-  selectedKlass.students = students.map((s) => ({id: s.id, name: s.name}));
-  selectedKlass.teachers = teachers.map((t) => ({id: t.id, name: t.name}));
+  selectedKlass.students = reFormatFromFullCalendar(selectedKlass.students);
+  selectedKlass.teachers = reFormatFromFullCalendar(selectedKlass.teachers);
 
   const [editKlass] = useMutation(editKlassMutation);
   const [values, setValues] = React.useState(action === 'create' ? {
@@ -91,16 +95,12 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
     students: []
   } : selectedKlass);
 
-  const [successMessage, toggleSuccessMessage] = React.useState({
-    showSuccessMessage: false
-  });
-
-  function renderTeacherMenuItem(teacher) {
-    return <MenuItem name="teacher" value={teacher} key={teacher.id}>{ teacher.name }</MenuItem>
+  function formatSelectOptions(records) {
+    return records.map( el => ({ value: el.name, label: el.name }));
   }
 
-  function renderStudentMenuItem(student) {
-    return <MenuItem name="student" value={student} key={student.id}>{ student.name }</MenuItem>
+  function reFormatFromFullCalendar(records) {
+    return records.map( el => ({ id: el.id, name: el.name }));
   }
 
   function renderSuccessMessage() {
@@ -209,80 +209,83 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
   if (loading) { return <h3>Loading...</h3> };
 
   return (
-    <form id="create-class-form" onSubmit={submitForm} className={classes.root}>
-      { successMessage.showSuccessMessage ? renderSuccessMessage() : null }
-      <TextField 
-        name="name" 
-        label="Name" 
-        className={classes.textField} 
-        value={values.name} 
-        onChange={handleChange('name')}
-      />
+    <Form>
+      <FormGroup>
+        <label htmlFor="#username">Username</label>
+        <FormInput id="#username" placeholder="Username" />
+      </FormGroup>
+      <FormGroup>
+        <label htmlFor="#password">Password</label>
+        <FormInput type="password" id="#password" placeholder="Password" />
+      </FormGroup>
+      <FormGroup>
+        <label htmlFor="#teachers">Teacher(s)</label>
+        <SelectField 
+          id="teachers"
+          options={formatSelectOptions(teachers)} 
+          currentValues={formatSelectOptions(selectedKlass.teachers)}
+          name="teachers"
+        />
+      </FormGroup>
+      <FormGroup>
+        <label htmlFor="#students">Students</label>
+        <SelectField 
+          id="students"
+          options={formatSelectOptions(students)} 
+          currentValues={formatSelectOptions(selectedKlass.students)}
+          name="students"
+        />
+      </FormGroup>
+    </Form>
+  )
 
-      <TextField 
-        name="description" 
-        label="Description" 
-        className={classes.textField}
-        value={values.description}
-        onChange={handleChange('description')}
-      />
+  //return (
+    //<form id="create-class-form" onSubmit={submitForm} className={classes.root}>
+      //{ successMessage.showSuccessMessage ? renderSuccessMessage() : null }
+      //<TextField 
+        //name="name" 
+        //label="Name" 
+        //className={classes.textField} 
+        //value={values.name} 
+        //onChange={handleChange('name')}
+      ///>
 
-      <FormControl className={classes.formControl}>
-        <InputLabel>Students</InputLabel>
-        <Select
-          multiple
-          value={values.students}
-          onChange={handleChange('students')}
-          renderValue={selected => (
-            <div className={classes.chips}>
-              {selected.map(student => (
-                <Chip key={student.id} label={student.name} className={classes.chip} />
-              ))}
-            </div>
-          )}>
-          {allStudents.map(student => renderStudentMenuItem(student))}
-        </Select>
-      </FormControl>
+      //<TextField 
+        //name="description" 
+        //label="Description" 
+        //className={classes.textField}
+        //value={values.description}
+        //onChange={handleChange('description')}
+      ///>
+      
+      //<SelectField 
+        //options={studentOptions} 
+        //currentValues={selectedKlass.students}
+        //name="students"
+      ///>
 
-      <FormControl className={classes.formControl}>
-        <InputLabel>Teacher(s)</InputLabel>
-        <Select 
-          multiple
-          value={values.teachers} 
-          onChange={handleChange('teachers')}
-          renderValue={selected => (
-            <div className={classes.chips}>
-              {selected.map(teacher => (
-                <Chip key={teacher.id} label={teacher.name} className={classes.chip} />
-              ))}
-            </div>
-          )}>
-            {allTeachers.map(teacher => renderTeacherMenuItem(teacher))}
-        </Select>
-      </FormControl>
+      //<TextField 
+        //label="Start Time" 
+        //value={formattedStartTime}
+        //onChange={handleChange('startTime')}
+        //className={classes.textField} 
+        //type="datetime-local" 
+        //InputLabelProps={{ shrink: true }} 
+      ///>
 
-      <TextField 
-        label="Start Time" 
-        value={formattedStartTime}
-        onChange={handleChange('startTime')}
-        className={classes.textField} 
-        type="datetime-local" 
-        InputLabelProps={{ shrink: true }} 
-      />
-
-      <TextField 
-        label="End Time" 
-        value={formattedEndTime}
-        onChange={handleChange('endTime')}
-        className={classes.textField} 
-        type="datetime-local" 
-        InputLabelProps={{ shrink: true }} 
-      />
-      <Button variant="contained" className={classes.button} type="submit">
-        {btnText}
-      </Button>
-    </form>
-  );
+      //<TextField 
+        //label="End Time" 
+        //value={formattedEndTime}
+        //onChange={handleChange('endTime')}
+        //className={classes.textField} 
+        //type="datetime-local" 
+        //InputLabelProps={{ shrink: true }} 
+      ///>
+      //<Button variant="contained" className={classes.button} type="submit">
+        //{btnText}
+      //</Button>
+    //</form>
+  //);
 }
 
 const mapStateToProps = ({ selectedKlassId }) => { return { selectedKlassId } };

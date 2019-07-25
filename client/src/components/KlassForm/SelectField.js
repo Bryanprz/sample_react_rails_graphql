@@ -34,10 +34,11 @@ const colourStyles = {
 };
  
 
-const SelectField = ({options, currentValues, name}) => {
+const SelectField = ({ value, options, name, onChange }) => {
   return (
     <Select
-      defaultValue={currentValues}
+      value={value}
+      onChange={onChange}
       isMulti
       name={name}
       options={options}

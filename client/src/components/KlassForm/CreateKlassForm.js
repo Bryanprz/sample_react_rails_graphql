@@ -6,7 +6,7 @@ import { useQuery } from 'react-apollo-hooks';
 import SelectField from './SelectField';
 
 // Shards UI
-import { Form, FormInput, FormGroup } from "shards-react";
+import { Form, FormInput, FormGroup, Button } from "shards-react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "shards-ui/dist/css/shards.min.css"
 
@@ -17,58 +17,19 @@ import fetchTeachersStudents from '../../queries/fetchTeachersStudents';
 import addKlassMutation from '../../mutations/createKlass';
 import editKlassMutation from '../../mutations/editKlass';
 
-// Material UI
-import { makeStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
-//import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import InputLabel from '@material-ui/core/InputLabel';
-import FormControl from '@material-ui/core/FormControl';
-import Chip from '@material-ui/core/Chip';
-
-const useStyles = makeStyles(theme => ({
-  root: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    flexDirection: 'column',
-    alignItems: 'center'
-  },
-  button: {
-    margin: theme.spacing(1)
-  },
-  textField: {
-    marginLeft: theme.spacing(1),
-    marginRight: theme.spacing(1),
-    width: 400,
-    paddingBottom: 20
-  },
-  formControl: {
-    marginLeft: theme.spacing(1),
-    marginRight: theme.spacing(1),
-    width: 400,
-    paddingBottom: 20,
-  },
-  chips: {
-    display: 'flex',
-    flexWrap: 'wrap',
-  },
-  chip: {
-    margin: 2,
-  }
-}));
-
-// TODO make form mutate correctly based on action from prop
-// TODO set options for all students/teachers from studio
 const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
-  const classes = useStyles();
   const [successMessage, toggleSuccessMessage] = React.useState({showSuccessMessage: false});
 
   // Load klass
-  var selectedKlass = { name: '', description: '', startTime: '', endTime: '' };  // default to empty klass form until query returns
+  // default to empty klass form until query returns
+  var selectedKlass = { name: '', description: '', startTime: '', endTime: '' }; 
   var { data, error, loading } = useQuery(fetchKlass, { variables: { id: selectedKlassId }});
+
+  // Remove 'typename' from GraphQL response for current students/teachers
   if (!loading) {
     selectedKlass = data.klass;
+    selectedKlass.students = selectedKlass.students.map(s => ({ id: s.id, name: s.name }));
+    selectedKlass.teachers = selectedKlass.teachers.map(t => ({ id: t.id, name: t.name }));
   }
 
   // Load Teachers/Students
@@ -77,13 +38,11 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
   var teachers = [];
   var { data, error, loading } = useQuery(fetchTeachersStudents, { variables: { id: 1 }});
 
+  // Remove 'typename' from GraphQL response for all student/teacher options
   if (!loading) { 
-    students = data.studio.students;
-    teachers = data.studio.teachers;
+    students = data.studio.students.map(s => ({ id: s.id, name: s.name }));
+    teachers = data.studio.teachers.map(t => ({ id: t.id, name: t.name }));
   };
-
-  selectedKlass.students = reFormatFromFullCalendar(selectedKlass.students);
-  selectedKlass.teachers = reFormatFromFullCalendar(selectedKlass.teachers);
 
   const [editKlass] = useMutation(editKlassMutation);
   const [values, setValues] = React.useState(action === 'create' ? {
@@ -96,11 +55,7 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
   } : selectedKlass);
 
   function formatSelectOptions(records) {
-    return records.map( el => ({ value: el.name, label: el.name }));
-  }
-
-  function reFormatFromFullCalendar(records) {
-    return records.map( el => ({ id: el.id, name: el.name }));
+    return records.map( el => ({ value: el.name, label: el.name, id: el.id }));
   }
 
   function renderSuccessMessage() {
@@ -137,6 +92,7 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
         });
         break;
       case 'create':
+        // todo make this use React Apollo Hooks useQuery as editKlass mutation does
         mutate({
           refetchQueries: [{ query: fetchKlassesQuery, variables: { id: 1 } }],
           variables: {
@@ -173,124 +129,99 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
 
   const handleChange = name => event => {
     // Reformat teacher/student entries to remove 'typename' (FullCalendar event obj remnant)
-    if (name === 'teachers' || name === 'students') {
-      const newValues = event.target.value.map(t => ({id: t.id, name: t.name}))
-      setValues({ ...values, [name]: newValues });
-      return;
+    if (event) {
+      if (name === 'teachers' || name === 'students') {
+        const newValues = event.map(t => ({id: t.id, name: t.value}))
+        setValues({ ...values, [name]: newValues });
+        return;
+      }
+      setValues({ ...values, [name]: event.target.value });
     }
-    setValues({ ...values, [name]: event.target.value });
   }
 
-  // Set edit/create variables
-  var formattedStartTime = '';
-  var formattedEndTime = '';
-  var btnText = '';
+  function formatDateTime(dateTimeString) {
+    if (dateTimeString === '') { return '' };
+    return new Date(dateTimeString).toISOString().split('Z')[0];
+  }
 
   function setBtnText() {
     switch (action) {
       case 'edit':
-        if (values.startTime && values.endTime) {
-          formattedStartTime = new Date(values.startTime).toISOString().split('Z')[0];
-          formattedEndTime = new Date(values.endTime).toISOString().split('Z')[0];
-        }
-        btnText = 'Update this class';
-        break;
+        return 'Update this class';
       case 'create': 
-        btnText = 'Create this class';
-        break;
+        return 'Create this class';
       default:
-        btnText = 'Submit';
-        break;
+        return 'Submit';
     }
   };
 
-  setBtnText();
-
   if (loading) { return <h3>Loading...</h3> };
 
+  console.log('values: ', values);
   return (
-    <Form>
+    <Form onSubmit={submitForm}>
+      { successMessage.showSuccessMessage ? renderSuccessMessage() : null }
       <FormGroup>
-        <label htmlFor="#username">Username</label>
-        <FormInput id="#username" placeholder="Username" />
+        <label htmlFor="#name">Name</label>
+        <FormInput 
+          id="#name" 
+          value={values.name}
+          onChange={handleChange('name')} 
+        />
       </FormGroup>
       <FormGroup>
-        <label htmlFor="#password">Password</label>
-        <FormInput type="password" id="#password" placeholder="Password" />
+        <label htmlFor="#description">Description</label>
+        <FormInput 
+          id="#description" 
+          value={values.description} 
+          onChange={handleChange('description')} 
+        />
+      </FormGroup>
+      <FormGroup>
+        <label htmlFor="#startTime">Start Time</label>
+        <FormInput 
+          id="#startTime" 
+          type="datetime-local"
+          value={formatDateTime(values.startTime)} 
+          onChange={handleChange('startTime')} 
+        />
+      </FormGroup>
+      <FormGroup>
+        <label htmlFor="#endTime">End Time</label>
+        <FormInput 
+          id="#endTime" 
+          type="datetime-local"
+          value={formatDateTime(values.endTime)} 
+          onChange={handleChange('endTime')} 
+        />
       </FormGroup>
       <FormGroup>
         <label htmlFor="#teachers">Teacher(s)</label>
         <SelectField 
           id="teachers"
-          options={formatSelectOptions(teachers)} 
-          currentValues={formatSelectOptions(selectedKlass.teachers)}
           name="teachers"
+          options={formatSelectOptions(teachers)} 
+          value={formatSelectOptions(values.teachers)}
+          onChange={handleChange('teachers')}
         />
       </FormGroup>
       <FormGroup>
         <label htmlFor="#students">Students</label>
         <SelectField 
           id="students"
-          options={formatSelectOptions(students)} 
-          currentValues={formatSelectOptions(selectedKlass.students)}
           name="students"
+          options={formatSelectOptions(students)} 
+          value={formatSelectOptions(values.students)}
+          onChange={handleChange('students')}
         />
       </FormGroup>
+      <Button type="submit">{setBtnText()}</Button>
     </Form>
   )
-
-  //return (
-    //<form id="create-class-form" onSubmit={submitForm} className={classes.root}>
-      //{ successMessage.showSuccessMessage ? renderSuccessMessage() : null }
-      //<TextField 
-        //name="name" 
-        //label="Name" 
-        //className={classes.textField} 
-        //value={values.name} 
-        //onChange={handleChange('name')}
-      ///>
-
-      //<TextField 
-        //name="description" 
-        //label="Description" 
-        //className={classes.textField}
-        //value={values.description}
-        //onChange={handleChange('description')}
-      ///>
-      
-      //<SelectField 
-        //options={studentOptions} 
-        //currentValues={selectedKlass.students}
-        //name="students"
-      ///>
-
-      //<TextField 
-        //label="Start Time" 
-        //value={formattedStartTime}
-        //onChange={handleChange('startTime')}
-        //className={classes.textField} 
-        //type="datetime-local" 
-        //InputLabelProps={{ shrink: true }} 
-      ///>
-
-      //<TextField 
-        //label="End Time" 
-        //value={formattedEndTime}
-        //onChange={handleChange('endTime')}
-        //className={classes.textField} 
-        //type="datetime-local" 
-        //InputLabelProps={{ shrink: true }} 
-      ///>
-      //<Button variant="contained" className={classes.button} type="submit">
-        //{btnText}
-      //</Button>
-    //</form>
-  //);
 }
 
 const mapStateToProps = ({ selectedKlassId }) => { return { selectedKlassId } };
  
-// TODO change hard-coded studio id in query to var
 export default compose(
   connect(mapStateToProps),
   graphql(addKlassMutation),

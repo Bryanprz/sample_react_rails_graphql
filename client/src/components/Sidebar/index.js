@@ -1,8 +1,8 @@
 import React from 'react';
 import './sidebar.scss';
+import { Link } from 'react-router-dom';
 
 // Material UI
-import Link from '@material-ui/core/Link';
 import {makeStyles } from '@material-ui/core/styles';
 
 const useStyles = makeStyles(theme => ({
@@ -19,15 +19,15 @@ const Sidebar = props => {
 
   return (
     <div className="sidebar">
-      <Link href="/" className={classes.link}>Dashboard</Link>
+      <Link to="/dashboard" className={classes.link}>Dashboard</Link>
 
-      <Link href="/classes" className={classes.link}>Classes</Link>
+      <Link to="/admin/classes" className={classes.link}>Classes</Link>
 
-      <Link href="/teachers" className={classes.link}>Teachers</Link>
+      <Link to="/admin/teachers" className={classes.link}>Teachers</Link>
 
-      <Link href="javascript:;" className={classes.link}>Calendar</Link>
+      <Link to="javascript:;" className={classes.link}>Calendar</Link>
 
-      <Link href="javascript:;" className={classes.link}>Students</Link>
+      <Link to="javascript:;" className={classes.link}>Students</Link>
     </div>
   );
 }

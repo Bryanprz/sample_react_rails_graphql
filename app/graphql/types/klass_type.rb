@@ -3,7 +3,7 @@ class Types::KlassInputType < GraphQL::Schema::InputObject
     # arg names should be snake-cased (server ruby syntax) in this server definition
     # and camel-cased in client-side calls
 
-    argument :id, ID, required: true
+    argument :id, ID, required: false
     argument :name, String, required: false
     argument :description, String, required: false
     argument :start_time, String, required: false

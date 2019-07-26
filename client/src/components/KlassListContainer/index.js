@@ -42,8 +42,8 @@ const KlassListContainer = props => {
 }
 
 // TODO get ID from props
-export default graphql(fetchKlasses, {
-  options: props => ({ variables: { id: 1 }})
-})(KlassListContainer);
+export default graphql(
+  fetchKlasses, { options: props => ({ variables: { id: 1 } }) }
+)(KlassListContainer);
 
 // TODO add proptypes expect studio id required

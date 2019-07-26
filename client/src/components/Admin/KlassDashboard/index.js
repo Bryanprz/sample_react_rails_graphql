@@ -2,23 +2,21 @@ import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { graphql, compose } from 'react-apollo';
 import { useQuery } from 'react-apollo-hooks';
-
-// 3rd party libs
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import './klass-dashboard.scss';
 
 // ActionCreators
-import { selectKlassId } from '../../actions';
+import { selectKlassId } from '../../../actions';
 
 // Queries & Mutations
-import fetchKlass from '../../queries/fetchKlass';
-import fetchKlassesQuery from '../../queries/fetchKlasses';
+import fetchKlass from '../../../queries/fetchKlass';
+import fetchKlassesQuery from '../../../queries/fetchKlasses';
 
 // My Components
-import Sidebar from '../Sidebar';
-import CreateKlassForm from '../KlassForm/CreateKlassForm';
-import KlassModal from '../KlassModal';
+import Sidebar from '../../Sidebar';
+import KlassForm from '../../KlassForm/KlassForm';
+import KlassModal from '../../KlassModal';
 
 // Material UI
 import { makeStyles } from '@material-ui/core/styles';
@@ -31,9 +29,7 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-//const KlassDashboard = ({data, selectKlassId, selectedKlassId}) => {
-const KlassDashboard = props => {
-  const {data, selectKlassId, selectedKlassId} = props;
+const KlassDashboard = ({data, selectKlassId, selectedKlassId}) => {
   const classes = useStyles();
   const [showForm, toggleForm] = useState(false);
   const [showKlassModal, toggleModal] = useState(false);
@@ -41,18 +37,12 @@ const KlassDashboard = props => {
   // Hack to force update after Redux action-creator gets invoked in submit func
   const [, updateState] = React.useState();
   const forceUpdate = React.useCallback(() => updateState({}), []);
- 
-  //const { klassData, klassError, klassLoading } = useQuery(fetchKlass, {
-    //variables: {
-      //id: selectedKlassId
-    //}
-  //});
-
-  if (data.loading || !data.studio) { return <h3>Loading...</h3> };
 
   var klassEvents = [];
 
-  data.studio.klasses.map(klass => createCalendarEvent(klass));
+  if (!data.loading && data.studio) { 
+    data.studio.klasses.map(klass => createCalendarEvent(klass));
+  };
 
   // required format for FullCalendar. https://fullcalendar.io/docs/event-parsing
   function createCalendarEvent(klass) {
@@ -69,27 +59,10 @@ const KlassDashboard = props => {
   }
 
   function klassClick({event}) {
-    //const selectedKlass = klassEvents.find( el => el.id === event.id);
     selectKlassId(event.id); // set Redux state
     forceUpdate();
-
-    //reFormatKlass(klass);
-
     toggleModal(true);
   }
-
-  // Reformat from FullCalendar specs to DB specs for klass
-  //function reFormatKlass(klass) {
-    //klass.name = klass.title;
-    //klass.startTime = klass.start.toString();
-    //klass.endTime = klass.end.toString();
-
-    //delete klass.title;
-    //delete klass.start;
-    //delete klass.end;
-
-    //return klass;
-  //}
 
   function closeModal() {
     toggleModal(false);
@@ -114,7 +87,18 @@ const KlassDashboard = props => {
           Add New Class
         </Button>
 
-        {showForm ? <CreateKlassForm action="create" /> : null}
+        {showForm ? 
+          <Grid
+            container
+            direction="column"
+            justify="center"
+            alignItems="center"
+          >
+            <KlassForm action="create" /> 
+          </Grid>
+          : null
+        }
+
         {showKlassModal ? 
           <KlassModal 
             onClose={closeModal} 

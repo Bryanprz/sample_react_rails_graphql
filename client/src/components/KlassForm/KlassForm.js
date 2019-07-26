@@ -17,7 +17,7 @@ import fetchTeachersStudents from '../../queries/fetchTeachersStudents';
 import addKlassMutation from '../../mutations/createKlass';
 import editKlassMutation from '../../mutations/editKlass';
 
-const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
+const KlassForm = ({ action, selectedKlassId, mutate}) => {
   const [successMessage, toggleSuccessMessage] = React.useState({showSuccessMessage: false});
 
   // Load klass
@@ -220,4 +220,4 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
 
 const mapStateToProps = ({ selectedKlassId }) => { return { selectedKlassId } };
  
-export default connect(mapStateToProps)(CreateKlassForm);
+export default connect(mapStateToProps)(KlassForm);

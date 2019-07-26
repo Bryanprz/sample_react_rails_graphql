@@ -22,6 +22,7 @@ import KlassForm from '../KlassForm/KlassForm';
 // Queries & Mutations
 import fetchKlass from '../../queries/fetchKlass';
 import fetchKlassesQuery from '../../queries/fetchKlasses';
+import fetchTeacherContracts from '../../queries/fetchTeacherContracts';
 import deleteKlassMutation from '../../mutations/deleteKlass';
 
 const styles = theme => ({
@@ -106,7 +107,10 @@ const KlassModal = props => {
     // TODO make studio ID variable not hard coded
     props.mutate({
       variables: { id: props.selectedKlassId },
-      refetchQueries: [{ query: fetchKlassesQuery, variables: { id: 1 } }]
+      refetchQueries: [
+        { query: fetchKlassesQuery, variables: { id: 1 } }, 
+        { query: fetchTeacherContracts, variables: { id: 1 } }
+      ]
     }).then(() => {
       toggleDeleteOptions(false);
       toggleDeleteSuccess(true);

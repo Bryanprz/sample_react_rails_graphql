@@ -7,16 +7,16 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import './klass-dashboard.scss';
 
 // ActionCreators
-import { selectKlassId } from '../../actions';
+import { selectKlassId } from '../../../actions';
 
 // Queries & Mutations
-import fetchKlass from '../../queries/fetchKlass';
-import fetchKlassesQuery from '../../queries/fetchKlasses';
+import fetchKlass from '../../../queries/fetchKlass';
+import fetchKlassesQuery from '../../../queries/fetchKlasses';
 
 // My Components
-import Sidebar from '../Sidebar';
-import KlassForm from '../KlassForm/KlassForm';
-import KlassModal from '../KlassModal';
+import Sidebar from '../../Sidebar';
+import KlassForm from '../../KlassForm/KlassForm';
+import KlassModal from '../../KlassModal';
 
 // Material UI
 import { makeStyles } from '@material-ui/core/styles';

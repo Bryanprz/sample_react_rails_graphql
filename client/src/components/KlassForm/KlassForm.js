@@ -5,6 +5,7 @@ import { useMutation } from 'react-apollo-hooks';
 import { useQuery } from 'react-apollo-hooks';
 import SelectField from './SelectField';
 import Grid from '@material-ui/core/Grid';
+import { capitalize } from '../../utils/stringHelpers';
 import './klass-form.scss';
 
 // Shards UI
@@ -69,7 +70,8 @@ const KlassForm = ({ action, selectedKlassId, mutate}) => {
   function submitForm(e) {
     e.preventDefault();
     var { id, name, description, startTime, endTime, teachers, students } = values;
-
+    name = capitalize(name);
+    
     switch (action) {
       case 'edit':
         editKlass({

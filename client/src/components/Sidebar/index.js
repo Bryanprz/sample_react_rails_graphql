@@ -19,7 +19,7 @@ const Sidebar = props => {
 
   return (
     <div className="sidebar">
-      <Link href="/" className={classes.link}>Dashboard</Link>
+      <Link href="/dashboard" className={classes.link}>Dashboard</Link>
 
       <Link href="/classes" className={classes.link}>Classes</Link>
 

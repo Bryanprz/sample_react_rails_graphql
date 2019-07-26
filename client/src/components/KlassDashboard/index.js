@@ -38,11 +38,11 @@ const KlassDashboard = ({data, selectKlassId, selectedKlassId}) => {
   const [, updateState] = React.useState();
   const forceUpdate = React.useCallback(() => updateState({}), []);
 
-  if (data.loading || !data.studio) { return <h3>Loading...</h3> };
-
   var klassEvents = [];
 
-  data.studio.klasses.map(klass => createCalendarEvent(klass));
+  if (!data.loading && data.studio) { 
+    data.studio.klasses.map(klass => createCalendarEvent(klass));
+  };
 
   // required format for FullCalendar. https://fullcalendar.io/docs/event-parsing
   function createCalendarEvent(klass) {
@@ -88,15 +88,16 @@ const KlassDashboard = ({data, selectKlassId, selectedKlassId}) => {
         </Button>
 
         {showForm ? 
-        <Grid
-          container
-          direction="column"
-          justify="center"
-          alignItems="center"
-        >
-          <KlassForm action="create" /> 
-        </Grid>
-        : null}
+          <Grid
+            container
+            direction="column"
+            justify="center"
+            alignItems="center"
+          >
+            <KlassForm action="create" /> 
+          </Grid>
+          : null
+        }
 
         {showKlassModal ? 
           <KlassModal 

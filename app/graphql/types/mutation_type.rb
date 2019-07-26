@@ -25,6 +25,10 @@ module Types
       true
     end
 
+    field :create_teacher, Types::TeacherType, null: false, mutation: Mutations::CreateTeacher do
+      description "Create a new teacher in the system. Teacher will have a TeachingContract with current studio by default"
+    end
+
     field :login, String, null: true, description: "Login a user" do
       argument :email, String, required: true
       argument :password, String, required: true

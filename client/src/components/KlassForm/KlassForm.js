@@ -4,6 +4,8 @@ import { graphql } from 'react-apollo';
 import { useMutation } from 'react-apollo-hooks';
 import { useQuery } from 'react-apollo-hooks';
 import SelectField from './SelectField';
+import Grid from '@material-ui/core/Grid';
+import './klass-form.scss';
 
 // Shards UI
 import { Form, FormInput, FormGroup, Button } from "shards-react";
@@ -157,64 +159,68 @@ const KlassForm = ({ action, selectedKlassId, mutate}) => {
   if (loading) { return <h3>Loading...</h3> };
 
   return (
-    <Form onSubmit={submitForm}>
-      { successMessage.showSuccessMessage ? renderSuccessMessage() : null }
-      <FormGroup>
-        <label htmlFor="#name">Name</label>
-        <FormInput 
-          id="#name" 
-          value={values.name}
-          onChange={handleChange('name')} 
-        />
-      </FormGroup>
-      <FormGroup>
-        <label htmlFor="#description">Description</label>
-        <FormInput 
-          id="#description" 
-          value={values.description} 
-          onChange={handleChange('description')} 
-        />
-      </FormGroup>
-      <FormGroup>
-        <label htmlFor="#startTime">Start Time</label>
-        <FormInput 
-          id="#startTime" 
-          type="datetime-local"
-          value={formatDateTime(values.startTime)} 
-          onChange={handleChange('startTime')} 
-        />
-      </FormGroup>
-      <FormGroup>
-        <label htmlFor="#endTime">End Time</label>
-        <FormInput 
-          id="#endTime" 
-          type="datetime-local"
-          value={formatDateTime(values.endTime)} 
-          onChange={handleChange('endTime')} 
-        />
-      </FormGroup>
-      <FormGroup>
-        <label htmlFor="#teachers">Teacher(s)</label>
-        <SelectField 
-          id="teachers"
-          name="teachers"
-          options={formatSelectOptions(teachers)} 
-          value={formatSelectOptions(values.teachers)}
-          onChange={handleChange('teachers')}
-        />
-      </FormGroup>
-      <FormGroup>
-        <label htmlFor="#students">Students</label>
-        <SelectField 
-          id="students"
-          name="students"
-          options={formatSelectOptions(students)} 
-          value={formatSelectOptions(values.students)}
-          onChange={handleChange('students')}
-        />
-      </FormGroup>
-      <Button type="submit">{setBtnText()}</Button>
-    </Form>
+    <Grid item>
+      <Form onSubmit={submitForm} className="klass-form">
+        { successMessage.showSuccessMessage ? renderSuccessMessage() : null }
+        <FormGroup>
+          <label htmlFor="#name">Name</label>
+          <FormInput 
+            id="#name" 
+            value={values.name}
+            onChange={handleChange('name')} 
+          />
+        </FormGroup>
+        <FormGroup>
+          <label htmlFor="#description">Description</label>
+          <FormInput 
+            id="#description" 
+            value={values.description} 
+            onChange={handleChange('description')} 
+          />
+        </FormGroup>
+        <FormGroup>
+          <label htmlFor="#startTime">Start Time</label>
+          <FormInput 
+            id="#startTime" 
+            type="datetime-local"
+            value={formatDateTime(values.startTime)} 
+            onChange={handleChange('startTime')} 
+          />
+        </FormGroup>
+        <FormGroup>
+          <label htmlFor="#endTime">End Time</label>
+          <FormInput 
+            id="#endTime" 
+            type="datetime-local"
+            value={formatDateTime(values.endTime)} 
+            onChange={handleChange('endTime')} 
+          />
+        </FormGroup>
+        <FormGroup>
+          <label htmlFor="#teachers">Teacher(s)</label>
+          <SelectField 
+            id="teachers"
+            name="teachers"
+            options={formatSelectOptions(teachers)} 
+            value={formatSelectOptions(values.teachers)}
+            onChange={handleChange('teachers')}
+          />
+        </FormGroup>
+        <FormGroup>
+          <label htmlFor="#students">Students</label>
+          <SelectField 
+            id="students"
+            name="students"
+            options={formatSelectOptions(students)} 
+            value={formatSelectOptions(values.students)}
+            onChange={handleChange('students')}
+          />
+        </FormGroup>
+        <div className="form-btn">
+          <Button type="submit">{setBtnText()}</Button>
+        </div>
+      </Form>
+    </Grid>
   )
 }
 

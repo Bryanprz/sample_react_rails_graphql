@@ -14,6 +14,7 @@ import MuiDialogActions from '@material-ui/core/DialogActions';
 import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
 import Typography from '@material-ui/core/Typography';
+import Grid from '@material-ui/core/Grid';
 
 // My Components
 import KlassForm from '../KlassForm/KlassForm';
@@ -93,7 +94,7 @@ const KlassModal = props => {
     return (
       <DialogActions>
         <Typography variant="subtitle1">Are you sure you want to delete this class?</Typography>
-        <Button variant="contained" color="primary" onClick={this.deleteKlass.bind(this)}>
+        <Button variant="contained" color="primary" onClick={deleteKlass.bind(this)}>
           Yes, delete this class
         </Button>
         <Button variant="contained" color="secondary">
@@ -129,7 +130,14 @@ const KlassModal = props => {
         <DialogContent dividers>
           {showDeleteConfirmation ? renderDeleteConfirmation() : null}
           {showDeleteSuccess ? "This class has been deleted." : null}
-          {showForm ? <KlassForm action="edit" /> : null}
+          {showForm ? 
+            <Grid
+              container
+              justify="center"
+            >
+              <KlassForm action="edit" /> 
+            </Grid>
+            : null}
           <Typography gutterBottom>
             { klass.description }
           </Typography>

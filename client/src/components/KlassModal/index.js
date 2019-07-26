@@ -68,6 +68,7 @@ const DialogActions = withStyles(theme => ({
 const KlassModal = props => {
   const [open, toggleOpen] = useState(true);
   const [showForm, toggleForm] = useState(false);
+  const [showDeleteOptions, toggleDeleteOptions] = useState(true);
   const [showDeleteSuccess, toggleDeleteSuccess] = useState(false);
   const [showDeleteConfirmation, toggleDeleteConfirmation] = useState(false);
   const { data, loading, error } = useQuery(fetchKlass, {
@@ -79,10 +80,7 @@ const KlassModal = props => {
   if (loading || !data.klass) { return "Loading..." };
 
   const { klass } = data;
-  //const klass = {name: '', startTime: '', endTime: '', description: '', teachers: [], students: []};
   var { teachers, students } = klass;
-  //var teachers = []
-  //var students = []
 
   const teachersEmpty = teachers.every(t => t.name === '');
   teachers = teachers.map(t => t.name).join(', ');
@@ -94,7 +92,7 @@ const KlassModal = props => {
     return (
       <DialogActions>
         <Typography variant="subtitle1">Are you sure you want to delete this class?</Typography>
-        <Button variant="contained" color="primary" onClick={deleteKlass.bind(this)}>
+        <Button variant="contained" color="primary" onClick={deleteKlass}>
           Yes, delete this class
         </Button>
         <Button variant="contained" color="secondary">
@@ -110,10 +108,24 @@ const KlassModal = props => {
       variables: { id: props.selectedKlassId },
       refetchQueries: [{ query: fetchKlassesQuery, variables: { id: 1 } }]
     }).then(() => {
+      toggleDeleteOptions(false);
       toggleDeleteSuccess(true);
       toggleDeleteConfirmation(false);
       }
     );
+  }
+
+  function renderDeleteOptions() {
+    return (
+      <DialogActions>
+        <Button onClick={() => toggleForm(true)} color="primary">
+          Edit this class
+        </Button>
+        <Button onClick={() => toggleDeleteConfirmation(true)} color="primary">
+          Delete this class
+        </Button>
+      </DialogActions>
+    )
   }
 
   return (
@@ -152,14 +164,7 @@ const KlassModal = props => {
             Students Registered: { studentsEmpty ? "No students registered" : students }
           </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => toggleForm(true)} color="primary">
-            Edit this class
-          </Button>
-          <Button onClick={() => toggleDeleteConfirmation(true)} color="primary">
-            Delete this class
-          </Button>
-        </DialogActions>
+        {showDeleteOptions ? renderDeleteOptions() : null}
       </Dialog>
     </div>
   );

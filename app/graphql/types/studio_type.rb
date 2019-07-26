@@ -5,6 +5,7 @@ module Types
     field :description, String, null: true
     field :klasses, [KlassType], null: true
     field :teachers, [TeacherType], null: true
+    field :teaching_contracts, [TeachingContractType], null: true
     field :students, [StudentType], null: true
   end
 end

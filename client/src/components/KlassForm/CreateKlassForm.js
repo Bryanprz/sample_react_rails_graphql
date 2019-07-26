@@ -26,7 +26,7 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
   var { data, error, loading } = useQuery(fetchKlass, { variables: { id: selectedKlassId }});
 
   // Remove 'typename' from GraphQL response for current students/teachers
-  if (!loading) {
+  if (!loading && action === 'edit') {
     selectedKlass = data.klass;
     selectedKlass.students = selectedKlass.students.map(s => ({ id: s.id, name: s.name }));
     selectedKlass.teachers = selectedKlass.teachers.map(t => ({ id: t.id, name: t.name }));
@@ -59,7 +59,7 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
   }
 
   function renderSuccessMessage() {
-    return <h3 className="success-message">Your class was created successfully and added to the calendar!</h3>
+    return <h3 className="success-message">Your class was updated successfully and added to the calendar!</h3>
   }
 
   // TODO Remove hardcoded IDs
@@ -87,7 +87,6 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
             { query: fetchKlassesQuery, variables: { id: 1 } }
           ]
         }).then(() => {
-          resetForm();
           toggleSuccessMessage({ showSuccessMessage: true });
         });
         break;
@@ -157,7 +156,6 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
 
   if (loading) { return <h3>Loading...</h3> };
 
-  console.log('values: ', values);
   return (
     <Form onSubmit={submitForm}>
       { successMessage.showSuccessMessage ? renderSuccessMessage() : null }

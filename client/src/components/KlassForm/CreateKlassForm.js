@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { graphql, compose } from 'react-apollo';
+import { graphql } from 'react-apollo';
 import { useMutation } from 'react-apollo-hooks';
 import { useQuery } from 'react-apollo-hooks';
 import SelectField from './SelectField';
@@ -44,6 +44,7 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
     teachers = data.studio.teachers.map(t => ({ id: t.id, name: t.name }));
   };
 
+  const [addKlass] = useMutation(addKlassMutation);
   const [editKlass] = useMutation(editKlassMutation);
   const [values, setValues] = React.useState(action === 'create' ? {
     name: '',
@@ -91,8 +92,7 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
         });
         break;
       case 'create':
-        // todo make this use React Apollo Hooks useQuery as editKlass mutation does
-        mutate({
+        addKlass({
           refetchQueries: [{ query: fetchKlassesQuery, variables: { id: 1 } }],
           variables: {
             klass: {
@@ -220,8 +220,4 @@ const CreateKlassForm = ({ action, selectedKlassId, mutate}) => {
 
 const mapStateToProps = ({ selectedKlassId }) => { return { selectedKlassId } };
  
-export default compose(
-  connect(mapStateToProps),
-  graphql(addKlassMutation),
-  graphql(editKlassMutation)
-)(CreateKlassForm);
+export default connect(mapStateToProps)(CreateKlassForm);

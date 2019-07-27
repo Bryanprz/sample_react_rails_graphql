@@ -1,8 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { graphql } from 'react-apollo';
-import { useMutation } from 'react-apollo-hooks';
-import { useQuery } from 'react-apollo-hooks';
+import { useQuery, useMutation } from 'react-apollo-hooks';
 import SelectField from './SelectField';
 import Grid from '@material-ui/core/Grid';
 import { capitalize } from '../../utils/stringHelpers';
@@ -17,6 +16,7 @@ import "shards-ui/dist/css/shards.min.css"
 import fetchKlass from '../../queries/fetchKlass';
 import fetchKlassesQuery from '../../queries/fetchKlasses';
 import fetchTeachersStudents from '../../queries/fetchTeachersStudents';
+import fetchTeacherContracts from '../../queries/fetchTeacherContracts';
 import addKlassMutation from '../../mutations/createKlass';
 import editKlassMutation from '../../mutations/editKlass';
 
@@ -89,6 +89,7 @@ const KlassForm = ({ action, selectedKlassId, mutate}) => {
           },
           refetchQueries: [
             { query: fetchKlass, variables: { id: selectedKlassId } }, 
+            { query: fetchTeacherContracts, variables: { id: 1 } }, 
             { query: fetchKlassesQuery, variables: { id: 1 } }
           ]
         }).then(() => {
@@ -162,7 +163,7 @@ const KlassForm = ({ action, selectedKlassId, mutate}) => {
 
   return (
     <Grid item>
-      <Form onSubmit={submitForm} className="klass-form">
+      <Form className="klass-form">
         { successMessage.showSuccessMessage ? renderSuccessMessage() : null }
         <FormGroup>
           <label htmlFor="#name">Name</label>
@@ -219,7 +220,7 @@ const KlassForm = ({ action, selectedKlassId, mutate}) => {
           />
         </FormGroup>
         <div className="form-btn">
-          <Button type="submit">{setBtnText()}</Button>
+          <Button onClick={submitForm} type="submit">{setBtnText()}</Button>
         </div>
       </Form>
     </Grid>

@@ -5,11 +5,12 @@ import Sidebar from '../../Sidebar';
 import Grid from '@material-ui/core/Grid';
 import { makeStyles } from '@material-ui/core/styles';
 import TeacherCard from './TeacherCard';
+import TeacherForm from './TeacherForm';
+import { Button } from "shards-react";
 
 import './teacher-card.scss';
 
 // Queries
-//import fetchTeachersQuery from '../../../queries/fetchTeachersStudents';
 import fetchTeacherContracts from '../../../queries/fetchTeacherContracts';
 
 const useStyles = makeStyles(theme => ({
@@ -21,6 +22,7 @@ const useStyles = makeStyles(theme => ({
 
 const TeacherDashboard = ({data}) => {
   const classes = useStyles();
+  const [showTeacherForm, toggleTeacherForm] = React.useState(false);
   
   function renderTeacherCards() {
     if (!data.loading && data.studio) {
@@ -43,6 +45,12 @@ const TeacherDashboard = ({data}) => {
         <Sidebar />
       </Grid>
       <div>  
+        <Button 
+          onClick={() => toggleTeacherForm(!showTeacherForm)}
+        >
+          Add New Teacher
+        </Button>
+        { showTeacherForm ? <TeacherForm /> : null }
         { renderTeacherCards() }
       </div>  
     </Grid>

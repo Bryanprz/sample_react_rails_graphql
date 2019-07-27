@@ -7,6 +7,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import TeacherCard from './TeacherCard';
 import TeacherForm from './TeacherForm';
 import { Button } from "shards-react";
+import Select from 'react-select' // TODO
 
 import './teacher-card.scss';
 
@@ -38,6 +39,19 @@ const TeacherDashboard = ({data}) => {
       ));
     }
   }
+
+  // TODO implement search option with React Select
+  //function teacherOptions() {
+    //if (!data.loading && data.studio) {
+      //return data.studio.teachingContracts.map(t => {
+        //return { name: t.teacher.name, label: t.teacher.name }
+      //})
+      ////return data.studio.teachingContracts.map(t => (
+        ////{ name: t.teacher.name, label: t.teacher.name }
+      ////));
+    //}
+    //return [{ value: '', label: '' }];
+  //}
 
   return (
     <Grid container className={classes.root}>

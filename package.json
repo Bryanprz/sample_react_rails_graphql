@@ -14,7 +14,7 @@
     "@fullcalendar/react": "^4.2.0",
     "apollo-client": "^2.6.3",
     "fullcalendar": "^3.10.0",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "moment": "^2.24.0",
     "node": "^12.6.0",
     "node-sass": "^4.12.0",
